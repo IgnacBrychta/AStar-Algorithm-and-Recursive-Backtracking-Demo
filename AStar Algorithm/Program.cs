@@ -1,25 +1,29 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 using static AStar_Algorithm.Node;
 
 namespace AStar_Algorithm
 {
     internal class Program
     {
-        static readonly int mapWidth  = 63;
-        static readonly int mapHeight = 235;
+        static readonly int mapWidth  = 43;
+        static readonly int mapHeight = 151;
+        const char blockChar = '█';
+        const char emptyCellChar = ' ';
         static void Main(string[] args)
         {
+            Console.WindowHeight = Console.LargestWindowHeight;
+            Console.WindowWidth = Console.LargestWindowWidth;
             Stopwatch mazeGeneration = new Stopwatch();
             mazeGeneration.Start();
             Node[,] maze = GenerateMaze(mapWidth, mapHeight);
             mazeGeneration.Stop();
-            Point[] obstacles = GetObstaclesFromMaze(ref maze);
+            PrintMaze(maze);
+            Console.ReadKey();
+            Console.Clear();
+            Point[] obstacles = GetObstaclesFromMaze(maze);
             Random random = new Random();
 
             int x; int y;
@@ -46,13 +50,13 @@ namespace AStar_Algorithm
 
             Stopwatch astar = new Stopwatch();
             astar.Start();
-            var path = AStar_FindPath(mapWidth, mapHeight, obstacles, start, end, Node.MovementDirections.STRAIGHT_LINE);
+            var path = AStar_FindPath(mapWidth, mapHeight, obstacles, start, end, MovementDirections.STRAIGHT_LINE);
             astar.Stop();
             Console.Title = $"Recursive backtracking and A* Demo | Maze generation: {mazeGeneration.ElapsedMilliseconds} ms | A*: {astar.ElapsedMilliseconds} ms";
             PrintPath(path, obstacles, start, end);
             Console.ReadKey();
         }
-        static Point[] GetObstaclesFromMaze(ref Node[,] maze)
+        static Point[] GetObstaclesFromMaze(in Node[,] maze)
         {
             List<Node> obstacles = new List<Node>();
             for (int i = 0; i < mapWidth; i++)
@@ -67,20 +71,19 @@ namespace AStar_Algorithm
             }
             return obstacles.ToArray();
         }
-        public static void PrintMaze(ref Node[,] maze)
+        public static void PrintMaze(in Node[,] maze)
         {
             for (int i = 0; i < mapWidth; i++)
             {
                 for (int j = 0; j < mapHeight; j++)
                 {
-                    Console.Write(maze[i, j].nodeType == NodeType.EMPTY ? ' ' : '#');
+                    Console.Write(maze[i, j].nodeType == NodeType.EMPTY ? emptyCellChar : blockChar);
                 }
                 Console.WriteLine();
             }
         }
         public static void PrintPath(List<Point> generatedPath, Point[] obstacles, Point start, Point end)
         {
-            char obstacle = 'O';
             if (generatedPath is null) return;
 
             for (int i = 0; i < mapWidth; i++)
@@ -90,7 +93,7 @@ namespace AStar_Algorithm
                     if(obstacles.Any(el => el.x == i && el.y == j))
                     {
                         Console.BackgroundColor = ConsoleColor.Blue;
-                        Console.Write(obstacle);
+                        Console.Write(blockChar);
                         Console.BackgroundColor = ConsoleColor.Black;
                     }
                     else if(generatedPath.Any(el => el.x == i && el.y == j))
@@ -98,25 +101,25 @@ namespace AStar_Algorithm
                         if(i == start.x && j == start.y)
                         {
                             Console.BackgroundColor = ConsoleColor.Green;
-                            Console.Write(' ');
+                            Console.Write(emptyCellChar);
                             Console.BackgroundColor = ConsoleColor.Black;
                         }
                         else if (i == end.x && j == end.y)
                         {
                             Console.BackgroundColor = ConsoleColor.Red;
-                            Console.Write(' ');
+                            Console.Write(emptyCellChar);
                             Console.BackgroundColor = ConsoleColor.Black;
                         }
                         else
                         {
                             Console.BackgroundColor = ConsoleColor.Magenta;
-                            Console.Write(' ');
+                            Console.Write(emptyCellChar);
                             Console.BackgroundColor = ConsoleColor.Black;
                         }
                     }
                     else
                     {
-                        Console.Write(' ');
+                        Console.Write(emptyCellChar);
                     }
                 }
                 Console.WriteLine();
